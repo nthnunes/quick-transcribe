@@ -1,21 +1,26 @@
 import whisper
 from tkinter import Tk
-from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter.filedialog import askopenfilenames
+import os
 
 Tk().withdraw()
-filename = askopenfilename(
-    title='Selecione o arquivo de áudio',
+
+filenames = askopenfilenames(
+    title='Selecione os arquivos de áudio',
     filetypes=[('Arquivos de áudio', '*.mp3 *.wav *.m4a *.aac *.ogg *.flac')]
 )
 
 model = whisper.load_model("base")
-response = model.transcribe(filename)
 
-save_path = asksaveasfilename(
-    title='Salvar arquivo de transcrição',
-    filetypes=[('Arquivos de texto', '*.txt')],
-    defaultextension='.txt'
-)
+transcription_dir = 'transcriptions'
+os.makedirs(transcription_dir, exist_ok=True)
 
-with open(save_path, 'w') as file:
-    file.write(response['text'])
+for filename in filenames:
+    response = model.transcribe(filename)
+    
+    base_name = os.path.basename(os.path.splitext(filename)[0] + '.txt')
+    save_path = os.path.join(transcription_dir, base_name)
+    with open(save_path, 'w') as file:
+        file.write(response['text'])
+
+print("\nTranscrição finalizada :)\n")
